@@ -30,6 +30,7 @@ namespace StockInfo.Server
         {
             services.AddScoped<IApiService, ApiService>();
             services.AddScoped<IHttpService, HttpService>();
+            services.AddScoped<IDatabaseService, DatabaseService>();
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(

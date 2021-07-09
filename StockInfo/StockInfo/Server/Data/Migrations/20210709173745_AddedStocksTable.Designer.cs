@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StockInfo.Server.Data;
 
 namespace StockInfo.Server.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210709173745_AddedStocksTable")]
+    partial class AddedStocksTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -365,35 +367,6 @@ namespace StockInfo.Server.Data.Migrations
                     b.ToTable("Stocks");
                 });
 
-            modelBuilder.Entity("StockInfo.Shared.Models.StockValue", b =>
-                {
-                    b.Property<string>("Ticker")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double>("C")
-                        .HasColumnType("float");
-
-                    b.Property<double>("H")
-                        .HasColumnType("float");
-
-                    b.Property<double>("L")
-                        .HasColumnType("float");
-
-                    b.Property<double>("O")
-                        .HasColumnType("float");
-
-                    b.Property<double>("V")
-                        .HasColumnType("float");
-
-                    b.HasKey("Ticker", "Date");
-
-                    b.ToTable("StockValues");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -443,22 +416,6 @@ namespace StockInfo.Server.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("StockInfo.Shared.Models.StockValue", b =>
-                {
-                    b.HasOne("StockInfo.Shared.Models.StockDetails", "Stock")
-                        .WithMany("Values")
-                        .HasForeignKey("Ticker")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Stock");
-                });
-
-            modelBuilder.Entity("StockInfo.Shared.Models.StockDetails", b =>
-                {
-                    b.Navigation("Values");
                 });
 #pragma warning restore 612, 618
         }
