@@ -1,0 +1,55 @@
+﻿@page
+@model RegisterModel
+@{
+
+}
+
+<div class="row">
+    <div class="myclass">
+        <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <h4>Create a new account.</h4>
+            <hr />
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Input.Email"></label>
+                <input asp-for="Input.Email" class="form-control" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Input.Password"></label>
+                <input asp-for="Input.Password" class="form-control" />
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Input.ConfirmPassword"></label>
+                <input asp-for="Input.ConfirmPassword" class="form-control" />
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+            <div class="centered">
+                <button type="submit" class="btn btn-primary">Register</button>
+            </div>
+        </form>
+        <p>
+            <div class="centered">
+                <a href="/Identity/Account/Login">Back to login</a>
+            </div>
+        </p>
+    </div>
+</div>
+
+<style>
+    .myclass {
+        padding: 5%;
+        margin: 15% auto;
+        border: 1px;
+        border-style: solid;
+    }
+
+    .form-group, .centered {
+        text-align: center;
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
