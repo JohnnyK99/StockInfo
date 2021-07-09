@@ -9,6 +9,7 @@
         public string Country { get; set; }
         public string Industry { get; set; }
         public string Sector { get; set; }
+        public bool IsSaved { get; set; }
 
         public bool HasNullProperties()
         {

@@ -43,6 +43,12 @@ else
                         </div>
                     </ContentTemplate>
                 </DashboardLayoutPanel>
+                <DashboardLayoutPanel SizeX="1" SizeY="1" Column="4">
+                    <HeaderTemplate></HeaderTemplate>
+                    <ContentTemplate>
+                        <ToggleSaved Processing="processing" IsSaved="@info.IsSaved" Toggle="ToggleSave" />
+                    </ContentTemplate>
+                </DashboardLayoutPanel>
                 <DashboardLayoutPanel Id="Chart" SizeY="1" SizeX="5" Row="1">
                     <ContentTemplate>
                         <div><StockChart ChartData="chartData" /></div>
@@ -66,6 +72,7 @@ else
     private int maxNumberOfDays = 365;
     private int numberOfArticles = 5;
     private bool notAvailable = false;
+    private bool processing = false; //for displaying loading circle while toggling saved state
 
     protected override async Task OnInitializedAsync()
     {
@@ -98,5 +105,19 @@ else
         var articlesResponse = await httpService.GetAsync<List<Article>>($"api/tickers/articles/{Ticker}?number={numberOfArticles}");
 
         articles = articlesResponse.Response;
+    }
+
+    private async Task ToggleSave()
+    {
+        processing = true;
+
+        var response = await httpService.PostAsync<SavedStock>($"api/tickers/saved", new SavedStock { Ticker = Ticker, Username = username });
+
+        if (response.Success)
+        {
+            info.IsSaved = !info.IsSaved;
+        }
+
+        processing = false;
     }
 }

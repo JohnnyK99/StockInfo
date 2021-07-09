@@ -18,6 +18,9 @@ namespace StockInfo.Shared.Models
 
         [JsonIgnore]
         public ICollection<StockValue> Values { get; set; }
+
+        [JsonIgnore]
+        public ICollection<SavedStock> Saved { get; set; }
     }
 }
 

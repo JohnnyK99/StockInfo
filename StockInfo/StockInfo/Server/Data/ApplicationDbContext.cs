@@ -22,6 +22,7 @@ namespace StockInfo.Server.Data
 
         public DbSet<StockDetails> Stocks { get; set; }
         public DbSet<StockValue> StockValues { get; set; }
+        public DbSet<SavedStock> SavedStocks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -29,6 +30,7 @@ namespace StockInfo.Server.Data
 
             builder.ApplyConfiguration(new StockDetailsEntityTypeConfiguration());
             builder.ApplyConfiguration(new StockValueEntityTypeConfiguration());
+            builder.ApplyConfiguration(new SavedStockEntityTypeConfiguration());
         }
     }
 }

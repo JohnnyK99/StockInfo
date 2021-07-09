@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace StockInfo.Server.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TickersController : ControllerBase
@@ -28,7 +28,7 @@ namespace StockInfo.Server.Controllers
         }
 
         [HttpGet("{ticker}")]
-        public async Task<IActionResult> GetStockInfoAsync(string ticker)
+        public async Task<IActionResult> GetStockInfoAsync(string ticker, string username)
         {
             var info = await _apiService.GetStockInfoAsync(ticker);
 
@@ -77,6 +77,8 @@ namespace StockInfo.Server.Controllers
                 });
             }
 
+            info.IsSaved = await _dbService.IsSavedStockAsync(username, ticker);
+
             return Ok(info);
         }
 
@@ -103,6 +105,27 @@ namespace StockInfo.Server.Controllers
             }
 
             return Ok(data);
+        }
+
+        [HttpPost("saved")]
+        public async Task<IActionResult> ToggleSaved(SavedStock savedStock)
+        {
+            if (await _dbService.IsSavedStockAsync(savedStock.Username, savedStock.Ticker))
+            {
+                await _dbService.RemoveSavedStockAsync(savedStock);
+            }
+            else
+            {
+                await _dbService.AddSavedStockAsync(savedStock);
+            }
+
+            return NoContent();
+        }
+
+        [HttpGet("saved")]
+        public async Task<IActionResult> GetSaved(string username)
+        {
+            return Ok(await _dbService.GetSavedStocks(username));
         }
 
         [HttpGet("articles/{ticker}")]

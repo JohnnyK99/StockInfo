@@ -135,5 +135,31 @@ namespace StockInfo.Server.Services
             })
                 .ToListAsync();
         }
+
+        public async Task<bool> IsSavedStockAsync(string username, string ticker)
+        {
+            return await _dbContext.SavedStocks.AnyAsync(saved => saved.Ticker == ticker && saved.Username == username);
+        }
+
+        public async Task RemoveSavedStockAsync(SavedStock savedStock)
+        {
+            _dbContext.SavedStocks.Remove(savedStock);
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task AddSavedStockAsync(SavedStock savedStock)
+        {
+            await _dbContext.SavedStocks.AddAsync(savedStock);
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<StockDetails>> GetSavedStocks(string username)
+        {
+            return await _dbContext.SavedStocks.Where(saved => saved.Username == username)
+                .Select(saved => saved.Stock)
+                .ToListAsync();
+        }
     }
 }

@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31410.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockInfo.Server", "StockInfo\Server\StockInfo.Server.csproj", "{BA49B88D-D2E4-4170-BA51-46290B1839EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StockInfo.Server", "StockInfo\Server\StockInfo.Server.csproj", "{BA49B88D-D2E4-4170-BA51-46290B1839EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockInfo.Client", "StockInfo\Client\StockInfo.Client.csproj", "{19587161-A7E0-4346-957E-0992947BBDD7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StockInfo.Client", "StockInfo\Client\StockInfo.Client.csproj", "{19587161-A7E0-4346-957E-0992947BBDD7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockInfo.Shared", "StockInfo\Shared\StockInfo.Shared.csproj", "{235560F8-1600-44CC-AD36-9E76D615A194}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StockInfo.Shared", "StockInfo\Shared\StockInfo.Shared.csproj", "{235560F8-1600-44CC-AD36-9E76D615A194}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

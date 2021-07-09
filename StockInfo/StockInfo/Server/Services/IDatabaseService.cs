@@ -16,5 +16,10 @@ namespace StockInfo.Server.Services
         Task<bool> ExistsValueAsync(string ticker);
         Task AddValuesAsync(IEnumerable<StockValueDto> values, string ticker);
         Task<IEnumerable<StockValueDto>> GetValuesAsync(string ticker, int days);
+
+        Task<bool> IsSavedStockAsync(string username, string ticker);
+        Task RemoveSavedStockAsync(SavedStock savedStock);
+        Task AddSavedStockAsync(SavedStock savedStock);
+        Task<IEnumerable<StockDetails>> GetSavedStocks(string username);
     }
 }

@@ -1,0 +1,56 @@
+﻿@page "/tickers/saved"
+
+@inject IHttpService httpService
+@inject AuthenticationStateProvider authentication
+@inject NavigationManager navigationManager 
+
+<h3>Saved Stocks</h3>
+
+@if (stocks == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <SfGrid DataSource="stocks" AllowFiltering="true" AllowPaging="true" AllowSorting="true" RowHeight="150">
+        <GridPageSettings PageCount="5" PageSizes="true"></GridPageSettings>
+        <GridFilterSettings Mode="FilterBarMode.Immediate" ImmediateModeDelay="100" ShowFilterBarStatus="false"></GridFilterSettings>
+        <GridEvents RowSelected="(e) => Selected(e)" TValue="StockInfo.Shared.Models.StockDetails"></GridEvents>
+        <GridColumns>
+            <GridColumn HeaderText="Logo" TextAlign="TextAlign.Center">
+                <Template>
+                    @{
+                        var stock = (context as StockInfo.Shared.Models.StockDetails);
+                        <img class="image" src="@stock.Logo" />
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@nameof(StockInfo.Shared.Models.StockDetails.Ticker)" HeaderText="Symbol" TextAlign="TextAlign.Center"></GridColumn>
+            <GridColumn Field="@nameof(StockInfo.Shared.Models.StockDetails.Name)" TextAlign="TextAlign.Center"></GridColumn>
+            <GridColumn Field="@nameof(StockInfo.Shared.Models.StockDetails.Country)" TextAlign="TextAlign.Center"></GridColumn>
+            <GridColumn Field="@nameof(StockInfo.Shared.Models.StockDetails.Industry)" TextAlign="TextAlign.Center"></GridColumn>
+            <GridColumn Field="@nameof(StockInfo.Shared.Models.StockDetails.Sector)" TextAlign="TextAlign.Center"></GridColumn>
+        </GridColumns>
+    </SfGrid>
+}
+
+@code {
+    private string username;
+    private List<StockInfo.Shared.Models.StockDetails> stocks;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var identity = await authentication.GetAuthenticationStateAsync();
+
+        username = identity.User.Identity.Name;
+
+        var response = await httpService.GetAsync<List<StockInfo.Shared.Models.StockDetails>>($"api/tickers/saved?username={username}");
+
+        stocks = response.Response;
+    }
+
+    private void Selected(RowSelectEventArgs<StockInfo.Shared.Models.StockDetails> args)
+    {
+        navigationManager.NavigateTo($"/tickers/{args.Data.Ticker}");
+    }
+}
