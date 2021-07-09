@@ -9,6 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StockInfo.Server.Data;
 using StockInfo.Server.Models;
+using StockInfo.Server.Services;
+using StockInfo.Shared.Helpers;
 using System.Linq;
 
 namespace StockInfo.Server
@@ -26,6 +28,9 @@ namespace StockInfo.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<IApiService, ApiService>();
+            services.AddScoped<IHttpService, HttpService>();
+
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
