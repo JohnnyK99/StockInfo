@@ -1,0 +1,29 @@
+﻿@inject NavigationManager navigationManager
+@inject IHttpService httpService
+
+<SfAutoComplete TValue="string" TItem="TickerName" Placeholder="e.g. TSLA" DataSource="@tickers" Width="200%">
+    <AutoCompleteTemplates TItem="TickerName">
+        <ItemTemplate>
+            <span><span class='ticker'>@((context as TickerName).Ticker)</span><span class='name'>@((context as TickerName).NameBrief)</span></span>
+        </ItemTemplate>
+    </AutoCompleteTemplates>
+    <AutoCompleteFieldSettings Value="Ticker" />
+    <AutoCompleteEvents TValue="string" TItem="TickerName" OnValueSelect="Selected" />
+</SfAutoComplete>
+
+
+@code {
+    private List<TickerName> tickers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await httpService.GetAsync<List<TickerName>>("api/tickers");
+
+        tickers = response.Response;
+    }
+
+    private void Selected(SelectEventArgs<TickerName> args)
+    {
+        navigationManager.NavigateTo($"tickers/{args.ItemData.Ticker}");
+    }
+}

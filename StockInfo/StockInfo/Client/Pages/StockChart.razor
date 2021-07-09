@@ -1,0 +1,21 @@
+﻿<SfStockChart @ref="stockChart" EnableCustomRange="false">
+    <StockChartSeriesCollection>
+        <StockChartSeries DataSource="@ChartData" Type="ChartSeriesType.HiloOpenClose" XName="Date" High="H" Low="L" Open="O" Close="C" Volume="V"></StockChartSeries>
+    </StockChartSeriesCollection>
+</SfStockChart>
+
+
+@code {
+    [Parameter]
+    public List<StockValueDto> ChartData { get; set; }
+
+    public SfStockChart stockChart;
+
+    protected override void OnParametersSet()
+    {
+        if (stockChart != null)
+        {
+            stockChart.Refresh();
+        }
+    }
+}

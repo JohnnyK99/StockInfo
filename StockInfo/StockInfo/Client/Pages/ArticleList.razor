@@ -1,0 +1,21 @@
+﻿@if (Articles == null)
+{
+    <p>Could not find any articles.</p>
+}
+else
+{
+    @foreach (var article in Articles)
+    {
+        <p>
+            <a href="@article.Article_url" target="_blank">
+                <ArticleView Article="article" />
+            </a>
+        </p>
+    }
+}
+
+@code {
+    [Parameter]
+    public List<Article> Articles { get; set; }
+}
+

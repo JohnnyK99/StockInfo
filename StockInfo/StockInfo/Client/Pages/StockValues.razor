@@ -1,0 +1,12 @@
+﻿<div>
+    <p><b>Last updated: </b>@Data.Date UTC</p>
+    <p><b>Open </b>@Data.O</p>
+    <p><b>Close: </b>@Data.C</p>
+    <p><b>Low: </b>@Data.L</p>
+    <p><b>High: </b>@Data.H</p>
+</div>
+
+@code {
+    [Parameter]
+    public StockValueDto Data { get; set; }
+}

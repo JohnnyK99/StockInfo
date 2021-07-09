@@ -1,12 +1,21 @@
-﻿@inherits LayoutComponentBase
+﻿@attribute [Authorize]
+
+@inherits LayoutComponentBase
 
 <div class="page">
     <div class="main">
         <div class="top-row px-4 auth">
+            <a href="">StockInfo</a>
+            <div class="mx-auto">
+                <AuthorizeView>
+                    <Authorized>
+                        <SearchBar />
+                    </Authorized>
+                </AuthorizeView>
+            </div>
             <LoginDisplay />
         </div>
-
-        <div class="content px-4">
+        <div class="content my-2 mx-3">
             @Body
         </div>
     </div>

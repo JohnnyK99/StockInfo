@@ -1,0 +1,26 @@
+﻿dashboard.content {
+    text-align: center;
+    margin: auto;
+}
+
+dashboard.header {
+    text-align: center;
+}
+
+.e-panel-header {
+    text-align: center;
+}
+
+img.centered {
+    margin: 25% auto;
+    display: flex;
+}
+
+div.scroll {
+    height: inherit;
+    overflow-y: auto;
+}
+
+a {
+    color: black;
+}

@@ -1,0 +1,102 @@
+﻿@page "/tickers/{ticker}"
+
+@inject AuthenticationStateProvider authentication
+@inject IHttpService httpService
+
+@attribute [Authorize]
+
+
+@if (info == null)
+{
+    <p>Loading...</p>
+}
+else if (info.HasNullProperties() || notAvailable)
+{
+    <p>Not found</p>
+}
+else
+{ <div>
+        <SfDashboardLayout Columns="5" AllowDragging="false" CellAspectRatio="1">
+            <DashboardLayoutPanels>
+                <DashboardLayoutPanel Id="Logo" SizeX="1" SizeY="1">
+                    <ContentTemplate>
+                        <img class="centered" src="@info.Logo" />
+                    </ContentTemplate>
+                </DashboardLayoutPanel>
+                <DashboardLayoutPanel Id="Info" SizeX="1" SizeY="1" Column="1">
+                    <HeaderTemplate>General information</HeaderTemplate>
+                    <ContentTemplate>
+                        <StockDetails Ticker="Ticker" Info="info" />
+                    </ContentTemplate>
+                </DashboardLayoutPanel>
+                <DashboardLayoutPanel Id="Values" SizeX="1" SizeY="1" Column="2">
+                    <HeaderTemplate>Recent values</HeaderTemplate>
+                    <ContentTemplate>
+                        <StockValues Data="@chartData.Last()" />
+                    </ContentTemplate>
+                </DashboardLayoutPanel>
+                <DashboardLayoutPanel Id="News" SizeX="1" SizeY="1" Column="3">
+                    <HeaderTemplate>Latest news</HeaderTemplate>
+                    <ContentTemplate>
+                        <div class="scroll">
+                            <ArticleList Articles="articles" />
+                        </div>
+                    </ContentTemplate>
+                </DashboardLayoutPanel>
+                <DashboardLayoutPanel Id="Chart" SizeY="1" SizeX="5" Row="1">
+                    <ContentTemplate>
+                        <div><StockChart ChartData="chartData" /></div>
+                    </ContentTemplate>
+                </DashboardLayoutPanel>
+            </DashboardLayoutPanels>
+        </SfDashboardLayout>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public string Ticker { get; set; }
+
+    private List<StockValueDto> chartData;
+    private List<Article> articles;
+    private StockInfoDto info;
+
+    private string username;
+    private int maxNumberOfDays = 365;
+    private int numberOfArticles = 5;
+    private bool notAvailable = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        chartData = new List<StockValueDto>();
+        var identity = await authentication.GetAuthenticationStateAsync();
+        username = identity.User.Identity.Name;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        info = null; //for better design while reloading
+
+        var infoResponse = await httpService.GetAsync<StockInfoDto>($"api/tickers/{Ticker}?username={username}");
+
+        info = infoResponse.Response;
+
+        var dataResponse = await httpService.GetAsync<List<StockValueDto>>($"api/tickers/{Ticker}/data?days={maxNumberOfDays}");
+
+        if (!dataResponse.Success)
+        {
+            notAvailable = true;
+        }
+
+        if (chartData.Count > 0)
+        {
+            chartData.Clear();
+        }
+        chartData.AddRange(dataResponse.Response);
+
+        var articlesResponse = await httpService.GetAsync<List<Article>>($"api/tickers/articles/{Ticker}?number={numberOfArticles}");
+
+        articles = articlesResponse.Response;
+    }
+}
