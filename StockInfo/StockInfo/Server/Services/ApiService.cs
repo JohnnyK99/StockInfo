@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using StockInfo.Shared.Helpers;
 using StockInfo.Shared.Models;
 using StockInfo.Shared.Models.DTOs;
-using StockInfo.Shared.Models.Wrappers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace StockInfo.Server.Services
@@ -12,75 +14,60 @@ namespace StockInfo.Server.Services
     public class ApiService : IApiService
     {
         private readonly IConfiguration _configuration;
-        private readonly IHttpService _httpService;
+        private readonly HttpClient _httpClient;
 
-        public ApiService(IConfiguration configuration, IHttpService httpService)
+        public ApiService(IConfiguration configuration, HttpClient httpClient)
         {
             _configuration = configuration;
-            _httpService = httpService;
+            _httpClient = httpClient;
         }
 
-        public async Task<List<TickerName>> GetTickersAsync()
+        public async Task<List<TickerName>> GetFilteredTickersAsync(string filter)
         {
-            List<TickerName> result = new List<TickerName>();
-            HttpResponseWrapper<TickerNameWrapper> currentResponse;
-            string url = "https://api.polygon.io/v3/reference/tickers?market=stocks&active=true&sort=ticker&order=asc&limit=1000";
+            var response = await _httpClient.GetAsync($"https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords={filter}&apikey={_configuration["ApiKey"]}");
 
-            do
+            if (response.IsSuccessStatusCode)
             {
-                currentResponse = await _httpService.GetAsync<TickerNameWrapper>($"{url}&apiKey={_configuration["PolygonKey"]}");
-
-                url = currentResponse.Response.Next_Url;
-
-                result.AddRange(currentResponse.Response.Results);
-
-            } while (url != null);
-
-            return result;
+                var wrapper = JsonConvert.DeserializeObject<TickerNameWrapper>(await response.Content.ReadAsStringAsync());
+                return wrapper.BestMatches.Select(value => new TickerName { Name = value.Name, Symbol = value.Symbol}).ToList();
+            }
+            return null;
         }
 
 
         public async Task<StockInfoDto> GetStockInfoAsync(string ticker)
         {
-            var response = await _httpService.GetAsync<StockInfoDto>($"https://api.polygon.io/v1/meta/symbols/{ticker}/company?&apiKey={_configuration["PolygonKey"]}");
+            var response = await _httpClient.GetAsync($"https://www.alphavantage.co/query?function=OVERVIEW&symbol={ticker}&apikey={_configuration["ApiKey"]}");
 
-            if (response.Success)
+            if (response.IsSuccessStatusCode)
             {
-                return response.Response;
+                return JsonConvert.DeserializeObject<StockInfoDto>(await response.Content.ReadAsStringAsync());
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
-        public async Task<IEnumerable<StockValueDto>> GetChartDataAsync(string ticker, int numberOfDays)
+        public async Task<IEnumerable<StockValueDto>> GetChartDataAsync(string ticker)
         {
-            string from = DateTime.Now.AddDays(-1*numberOfDays).ToString("yyyy-MM-dd");
-            string to = DateTime.Now.ToString("yyyy-MM-dd");
+            var response = await _httpClient.GetAsync($"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={ticker}&apikey={_configuration["ApiKey"]}");
 
-            var response = await _httpService.GetAsync<StockValueWrapper>($"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/{from}/{to}?unadjusted=false&sort=asc&apiKey={_configuration["PolygonKey"]}");
-
-            if (!response.Success)
+            if (response.IsSuccessStatusCode)
             {
-                return null;
+                string content = await response.Content.ReadAsStringAsync();
+                StockValueWrapper wrapper = JsonConvert.DeserializeObject<StockValueWrapper>(content);
+
+                return wrapper.Values.Select(value => new StockValueDto
+                {
+                    Date = value.Key,
+                    Open = value.Value.Open,
+                    High = value.Value.High,
+                    Low = value.Value.Low,
+                    Close = value.Value.Close,
+                    Volume = value.Value.Volume
+                });
             }
 
-            var wrapper = response.Response;
-
-            foreach (var c in wrapper.Results)
-            {
-                c.Date = DateTimeOffset.FromUnixTimeMilliseconds(c.T).UtcDateTime;
-            }
-
-            return wrapper.Results;
-        }
-
-        public async Task<IEnumerable<Article>> GetArticlesAsync(string ticker, int number)
-        {
-            var response = await _httpService.GetAsync <ArticlesWrapper>($"https://api.polygon.io/v2/reference/news?limit={number}&order=descending&sort=published_utc&ticker={ticker}&apiKey={_configuration["PolygonKey"]}");
-
-            return response.Response.Results;
+            return null;
         }
     }
 }

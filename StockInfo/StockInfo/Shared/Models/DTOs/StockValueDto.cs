@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace StockInfo.Shared.Models.DTOs
 {
@@ -6,17 +7,15 @@ namespace StockInfo.Shared.Models.DTOs
     {
         public DateTime Date { get; set; }
 
-        public double O { get; set; }
+        public double Open { get; set; }
 
-        public double L { get; set; }
+        public double Low { get; set; }
 
-        public double C { get; set; }
+        public double Close { get; set; }
 
-        public double H { get; set; }
+        public double High { get; set; }
 
-        public double V { get; set; }
-
-        public long T { get; set; }
+        public double Volume { get; set; }
     }
 }
 

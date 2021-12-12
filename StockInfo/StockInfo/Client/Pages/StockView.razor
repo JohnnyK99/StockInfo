@@ -1,7 +1,7 @@
 ﻿@page "/tickers/{ticker}"
 
 @inject AuthenticationStateProvider authentication
-@inject IHttpService httpService
+@inject HttpClient httpClient
 
 @attribute [Authorize]
 
@@ -10,114 +10,170 @@
 {
     <p>Loading...</p>
 }
-else if (info.HasNullProperties() || notAvailable)
+else if (notAvailable)
 {
     <p>Not found</p>
 }
 else
-{ <div>
-        <SfDashboardLayout Columns="5" AllowDragging="false" CellAspectRatio="1">
-            <DashboardLayoutPanels>
-                <DashboardLayoutPanel Id="Logo" SizeX="1" SizeY="1">
-                    <ContentTemplate>
-                        <img class="centered" src="@info.Logo" />
-                    </ContentTemplate>
-                </DashboardLayoutPanel>
-                <DashboardLayoutPanel Id="Info" SizeX="1" SizeY="1" Column="1">
-                    <HeaderTemplate>General information</HeaderTemplate>
-                    <ContentTemplate>
-                        <StockDetails Ticker="Ticker" Info="info" />
-                    </ContentTemplate>
-                </DashboardLayoutPanel>
-                <DashboardLayoutPanel Id="Values" SizeX="1" SizeY="1" Column="2">
-                    <HeaderTemplate>Recent values</HeaderTemplate>
-                    <ContentTemplate>
-                        <StockValues Data="@chartData.Last()" />
-                    </ContentTemplate>
-                </DashboardLayoutPanel>
-                <DashboardLayoutPanel Id="News" SizeX="1" SizeY="1" Column="3">
-                    <HeaderTemplate>Latest news</HeaderTemplate>
-                    <ContentTemplate>
-                        <div class="scroll">
-                            <ArticleList Articles="articles" />
+{
+    <div class="row">
+        <div class="col-4"></div>
+        <div class="col-4">
+            <h2 class="text-center">@info.Name</h2>
+        </div>
+        <div class="col-4 text-right">
+            <label class="mr-3">@(info.IsSaved ? "Usuń z zapisanych" : "Dodaj do zapisanych")</label>
+            <RadzenSwitch @bind-Value="info.IsSaved" Change="ToggleSave"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4 text-center">
+            <img src="@($"https://eodhistoricaldata.com/img/logos/US/{Ticker}.png")" onerror="this.onerror = null; this.src = 'no_image.jpg';" style="height: 200px"/>
+        </div>
+        <div class="col-8">
+            <RadzenTabs Style="height: 100%">
+                <Tabs>
+                    <RadzenTabsItem Text="Ogólne informacje">
+                        <div class="w-50">
+                            <div class="stock-info-item">
+                                <span>Nazwa:</span>
+                                <span>@info.Name</span>
+                            </div>
+                            <div class="stock-info-item">
+                                <span>Giełda:</span>
+                                <span>@info.Exchange</span>
+                            </div>
+                            <div class="stock-info-item">
+                                <span>Waluta:</span>
+                                <span>@info.Currency</span>
+                            </div>
+                            <div class="stock-info-item">
+                                <span>Sektor:</span>
+                                <span class="text-lowercase">@info.Sector</span>
+                            </div>
+                            <div class="stock-info-item">
+                                <span>Przemysł:</span>
+                                <span class="text-lowercase">@info.Industry</span>
+                            </div>
                         </div>
-                    </ContentTemplate>
-                </DashboardLayoutPanel>
-                <DashboardLayoutPanel SizeX="1" SizeY="1" Column="4">
-                    <HeaderTemplate></HeaderTemplate>
-                    <ContentTemplate>
-                        <ToggleSaved Processing="processing" IsSaved="@info.IsSaved" Toggle="ToggleSave" />
-                    </ContentTemplate>
-                </DashboardLayoutPanel>
-                <DashboardLayoutPanel Id="Chart" SizeY="1" SizeX="5" Row="1">
-                    <ContentTemplate>
-                        <div><StockChart ChartData="chartData" /></div>
-                    </ContentTemplate>
-                </DashboardLayoutPanel>
-            </DashboardLayoutPanels>
-        </SfDashboardLayout>
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Opis">
+                        <span class="stock-description">@info.Description</span>
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Wartości">
+                        @{
+                            var newestValues = _chartData.FirstOrDefault();
+                            <div class="w-50">
+                                <div class="stock-info-item">
+                                    <span>Open:</span>
+                                    <span>@newestValues.Open</span>
+                                </div>
+                                <div class="stock-info-item">
+                                    <span>Close:</span>
+                                    <span>@newestValues.Close</span>
+                                </div>
+                                <div class="stock-info-item">
+                                    <span>Low:</span>
+                                    <span>@newestValues.Low</span>
+                                </div>
+                                <div class="stock-info-item">
+                                    <span>High:</span>
+                                    <span>@newestValues.High</span>
+                                </div>
+                                <div class="stock-info-item">
+                                    <span>Volume:</span>
+                                    <span>@newestValues.Volume</span>
+                                </div>
+                            </div>
+                        }
+                    </RadzenTabsItem>
+                </Tabs>
+            </RadzenTabs>
+        </div>
+    </div>
+    <div class="col-12">
+        <StockChart ChartData="_chartData" />
     </div>
 }
+
+<style>
+    .stock-info-item {
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: 1rem;
+    }
+
+    .stock-description{
+        line-height: 1.5rem;
+    }
+
+    .rz-switch{
+        vertical-align: middle;
+    }
+</style>
 
 
 @code {
     [Parameter]
     public string Ticker { get; set; }
 
-    private List<StockValueDto> chartData;
-    private List<Article> articles;
+    private List<StockValueDto> _chartData;
     private StockInfoDto info;
 
     private string username;
-    private int maxNumberOfDays = 365;
     private int numberOfArticles = 5;
     private bool notAvailable = false;
     private bool processing = false; //for displaying loading circle while toggling saved state
 
     protected override async Task OnInitializedAsync()
     {
-        chartData = new List<StockValueDto>();
+        //_chartData = new List<StockValueDto>();
         var identity = await authentication.GetAuthenticationStateAsync();
         username = identity.User.Identity.Name;
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        info = null; //for better design while reloading
+        var response = await httpClient.GetAsync($"api/tickers/{Ticker}?username={username}");
 
-        var infoResponse = await httpService.GetAsync<StockInfoDto>($"api/tickers/{Ticker}?username={username}");
-
-        info = infoResponse.Response;
-
-        var dataResponse = await httpService.GetAsync<List<StockValueDto>>($"api/tickers/{Ticker}/data?days={maxNumberOfDays}");
-
-        if (!dataResponse.Success)
+        if(!response.IsSuccessStatusCode)
         {
-            notAvailable = true;
+            //TODO: Show toast message
+        }
+        else
+        {
+            info = JsonConvert.DeserializeObject<StockInfoDto>(await response.Content.ReadAsStringAsync());
         }
 
-        if (chartData.Count > 0)
+        response = await httpClient.GetAsync($"api/tickers/{Ticker}/data");
+
+        if (!response.IsSuccessStatusCode)
         {
-            chartData.Clear();
+            //TODO: Show toast message
         }
-        chartData.AddRange(dataResponse.Response);
-
-        var articlesResponse = await httpService.GetAsync<List<Article>>($"api/tickers/articles/{Ticker}?number={numberOfArticles}");
-
-        articles = articlesResponse.Response;
+        else
+        {
+            _chartData = JsonConvert.DeserializeObject<List<StockValueDto>>(await response.Content.ReadAsStringAsync());
+            Console.WriteLine(_chartData.FirstOrDefault().Date + ", " + _chartData.FirstOrDefault().Close);
+        }
     }
 
     private async Task ToggleSave()
     {
-        processing = true;
+        //processing = true;
 
-        var response = await httpService.PostAsync<SavedStock>($"api/tickers/saved", new SavedStock { Ticker = Ticker, Username = username });
+        var response = await httpClient.PostAsJsonAsync<SavedStock>($"api/tickers/saved", new SavedStock { Ticker = Ticker, Username = username });
 
-        if (response.Success)
+        if(!response.IsSuccessStatusCode)
         {
             info.IsSaved = !info.IsSaved;
         }
 
-        processing = false;
+        //if (response.IsSuccessStatusCode)
+        //{
+        //    info.IsSaved = !info.IsSaved;
+        //}
+
+        //processing = false;
     }
 }

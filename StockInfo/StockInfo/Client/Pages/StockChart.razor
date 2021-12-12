@@ -1,21 +1,79 @@
-﻿<SfStockChart @ref="stockChart" EnableCustomRange="false">
-    <StockChartSeriesCollection>
-        <StockChartSeries DataSource="@ChartData" Type="ChartSeriesType.HiloOpenClose" XName="Date" High="H" Low="L" Open="O" Close="C" Volume="V"></StockChartSeries>
-    </StockChartSeriesCollection>
-</SfStockChart>
+﻿@using Radzen.Blazor 
 
+<RadzenChart>
+    <RadzenLineSeries Data="ChartData" CategoryProperty="Date" ValueProperty="Close">
+        <TooltipTemplate Context="data">
+            <div class="grid-toolbox">
+                <span class="grid-toolbox-title">@data.Date.ToString("dd-MM-yyyy")</span>
+                <div class="divider" />
+                <div class="grid-toolbox-item">
+                    <span>Open:</span>
+                    <span>@data.Open</span>
+                </div>
+                <div class="grid-toolbox-item">
+                    <span>Close:</span>
+                    <span>@data.Close</span>
+                </div>
+                <div class="grid-toolbox-item">
+                    <span>Low:</span>
+                    <span>@data.Low</span>
+                </div>
+                <div class="grid-toolbox-item">
+                    <span>High:</span>
+                    <span>@data.High</span>
+                </div>
+                <div class="grid-toolbox-item">
+                    <span>Volume:</span>
+                    <span>@GetFormattedValue(data.Volume)</span>
+                </div>
+            </div>
+        </TooltipTemplate>
+    </RadzenLineSeries>
+    <RadzenValueAxis>
+        <RadzenGridLines Visible="true"/>
+    </RadzenValueAxis>
+    <RadzenLegend Visible="false" />
+</RadzenChart>
+
+<style>
+    .grid-toolbox{
+        display: grid;
+        width: 10rem;
+        z-index: 5;
+    }
+
+    .grid-toolbox-title{
+        text-align: center;
+    }
+
+    .grid-toolbox-item{
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .divider{
+        height: 1px;
+        border-bottom: 1px solid;
+    }
+</style>
 
 @code {
     [Parameter]
     public List<StockValueDto> ChartData { get; set; }
 
-    public SfStockChart stockChart;
-
-    protected override void OnParametersSet()
+    private string GetFormattedValue(double value)
     {
-        if (stockChart != null)
+        if(value < 10000)
         {
-            stockChart.Refresh();
+            return value.ToString();
+        }
+        else if(value < 1000000)
+        {
+            return $"{Math.Floor(value / 1000)}k";
+        }
+        else
+        {
+            return $"{Math.Floor(value / 1000000)}M";
         }
     }
 }

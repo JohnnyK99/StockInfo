@@ -8,12 +8,12 @@ namespace StockInfo.Shared.Models
     {
         public string Ticker { get; set; }
         public string Name { get; set; }
-        public string Logo { get; set; }
-        public string Url { get; set; }
-        public string Ceo { get; set; }
+        public string Description { get; set; }
         public string Country { get; set; }
         public string Industry { get; set; }
         public string Sector { get; set; }
+        public string Exchange { get; set; }
+        public string Currency { get; set; }
         public DateTime LastUpdate { get; set; }
 
         [JsonIgnore]

@@ -1,8 +1,8 @@
 ﻿@page "/tickers/saved"
 
-@inject IHttpService httpService
 @inject AuthenticationStateProvider authentication
 @inject NavigationManager navigationManager 
+@inject HttpClient httpClient
 
 <h3>Saved Stocks</h3>
 
@@ -12,31 +12,27 @@
 }
 else
 {
-    <SfGrid DataSource="stocks" AllowFiltering="true" AllowPaging="true" AllowSorting="true" RowHeight="150">
-        <GridPageSettings PageCount="5" PageSizes="true"></GridPageSettings>
-        <GridFilterSettings Mode="FilterBarMode.Immediate" ImmediateModeDelay="100" ShowFilterBarStatus="false"></GridFilterSettings>
-        <GridEvents RowSelected="(e) => Selected(e)" TValue="StockInfo.Shared.Models.StockDetails"></GridEvents>
-        <GridColumns>
-            <GridColumn HeaderText="Logo" TextAlign="TextAlign.Center">
-                <Template>
-                    @{
-                        var stock = (context as StockInfo.Shared.Models.StockDetails);
-                        <img class="image" src="@stock.Logo" />
-                    }
+    <RadzenDataGrid TItem="StockDetails" Data="stocks" SelectionMode="Radzen.DataGridSelectionMode.Single" EmptyText="Brak rekordów do wyświetlenia" RowSelect="Redirect">
+        <Columns>
+            <RadzenDataGridColumn TItem="StockDetails" Title="Symbol" Width="100px" CssClass="text-center">
+                <Template Context="data">
+                    <img src="@($"https://eodhistoricaldata.com/img/logos/US/{data.Ticker}.png")" onerror="this.onerror = null; this.src = 'no_image.jpg';" style="height: 50px;"/>
                 </Template>
-            </GridColumn>
-            <GridColumn Field="@nameof(StockInfo.Shared.Models.StockDetails.Ticker)" HeaderText="Symbol" TextAlign="TextAlign.Center"></GridColumn>
-            <GridColumn Field="@nameof(StockInfo.Shared.Models.StockDetails.Name)" TextAlign="TextAlign.Center"></GridColumn>
-            <GridColumn Field="@nameof(StockInfo.Shared.Models.StockDetails.Country)" TextAlign="TextAlign.Center"></GridColumn>
-            <GridColumn Field="@nameof(StockInfo.Shared.Models.StockDetails.Industry)" TextAlign="TextAlign.Center"></GridColumn>
-            <GridColumn Field="@nameof(StockInfo.Shared.Models.StockDetails.Sector)" TextAlign="TextAlign.Center"></GridColumn>
-        </GridColumns>
-    </SfGrid>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="StockDetails" Title="Nazwa" Property="@nameof(StockDetails.Name)" />
+            <RadzenDataGridColumn TItem="StockDetails" Title="Kraj" Property="@nameof(StockDetails.Country)"/>
+            <RadzenDataGridColumn TItem="StockDetails" Title="Przemysł" Property="@nameof(StockDetails.Industry)"/>
+            <RadzenDataGridColumn TItem="StockDetails" Title="Sektor" Property="@nameof(StockDetails.Sector)"/>
+        </Columns>
+    </RadzenDataGrid>
 }
 
 @code {
+    //TODO: Add filtering, sorting, showing logo images and navigating to selected stock
+    //TODO: Add toast message when failed to fetch stocks
     private string username;
-    private List<StockInfo.Shared.Models.StockDetails> stocks;
+    private List<StockDetails> stocks;
+    private List<StockDetails> selectedStocks;
 
     protected override async Task OnInitializedAsync()
     {
@@ -44,13 +40,17 @@ else
 
         username = identity.User.Identity.Name;
 
-        var response = await httpService.GetAsync<List<StockInfo.Shared.Models.StockDetails>>($"api/tickers/saved?username={username}");
+        var response = await httpClient.GetAsync($"api/tickers/saved?username={username}");
 
-        stocks = response.Response;
+        if (response.IsSuccessStatusCode)
+        {
+            stocks = JsonConvert.DeserializeObject<List<StockDetails>>(await response.Content.ReadAsStringAsync());
+        }
     }
 
-    private void Selected(RowSelectEventArgs<StockInfo.Shared.Models.StockDetails> args)
+    private void Redirect(object Stock)
     {
-        navigationManager.NavigateTo($"/tickers/{args.Data.Ticker}");
+        var ticker = ((StockDetails)Stock).Ticker;
+        navigationManager.NavigateTo($"/tickers/{ticker}");
     }
 }

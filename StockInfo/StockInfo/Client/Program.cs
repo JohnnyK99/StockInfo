@@ -4,12 +4,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StockInfo.Shared.Helpers;
-using Syncfusion.Blazor;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using MudBlazor.Services;
 
 namespace StockInfo.Client
 {
@@ -17,8 +17,6 @@ namespace StockInfo.Client
     {
         public static async Task Main(string[] args)
         {
-            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("NDYwNDkxQDMxMzkyZTMxMmUzMExjVndyZlN3dEt1Y3h0R01laWlydVlZaVFNT3B6R1RnRDNsN0t2T2pFbzA9");
-
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
 
@@ -30,7 +28,7 @@ namespace StockInfo.Client
             builder.Services.AddScoped<IHttpService, HttpService>();
 
             builder.Services.AddApiAuthorization();
-            builder.Services.AddSyncfusionBlazor();
+            builder.Services.AddMudServices();
 
             await builder.Build().RunAsync();
         }

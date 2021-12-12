@@ -41,12 +41,12 @@ namespace StockInfo.Server.Services
             _dbContext.Stocks.Attach(newInfo);
 
             _dbContext.Entry(newInfo).Property("Name").IsModified = true;
-            _dbContext.Entry(newInfo).Property("Logo").IsModified = true;
-            _dbContext.Entry(newInfo).Property("Url").IsModified = true;
-            _dbContext.Entry(newInfo).Property("Ceo").IsModified = true;
+            _dbContext.Entry(newInfo).Property("Description").IsModified = true;
             _dbContext.Entry(newInfo).Property("Country").IsModified = true;
             _dbContext.Entry(newInfo).Property("Industry").IsModified = true;
             _dbContext.Entry(newInfo).Property("Sector").IsModified = true;
+            _dbContext.Entry(newInfo).Property("Exchange").IsModified = true;
+            _dbContext.Entry(newInfo).Property("Currency").IsModified = true;
             _dbContext.Entry(newInfo).Property("LastUpdate").IsModified = true;
 
             await _dbContext.SaveChangesAsync();
@@ -59,12 +59,12 @@ namespace StockInfo.Server.Services
             return new StockInfoDto
             {
                 Name = info.Name,
-                Logo = info.Logo,
-                Ceo = info.Ceo,
-                Url = info.Url,
+                Description = info.Description,
                 Country = info.Country,
                 Industry = info.Industry,
-                Sector = info.Sector
+                Sector = info.Sector,
+                Exchange = info.Exchange,
+                Currency = info.Currency
             };
         }
 
@@ -75,8 +75,11 @@ namespace StockInfo.Server.Services
 
         private async Task<bool> AnyValuesToAdd(IEnumerable<StockValueDto> values, string ticker)
         {
-            return (values.Max(value => value.Date) > await _dbContext.StockValues.Where(value => value.Ticker == ticker).MaxAsync(value => value.Date) ||
-                values.Min(value => value.Date) < await _dbContext.StockValues.Where(value => value.Ticker == ticker).MinAsync(value => value.Date));
+            return (values.Max(value => value.Date) > 
+                await _dbContext.StockValues.Where(value => value.Ticker == ticker).MaxAsync(value => value.Date) 
+                ||
+                values.Min(value => value.Date) 
+                < await _dbContext.StockValues.Where(value => value.Ticker == ticker).MinAsync(value => value.Date));
         }
 
         public async Task AddValuesAsync(IEnumerable<StockValueDto> values, string ticker)
@@ -89,11 +92,11 @@ namespace StockInfo.Server.Services
                     {
                         Ticker = ticker,
                         Date = value.Date,
-                        O = value.O,
-                        L = value.L,
-                        C = value.C,
-                        H = value.H,
-                        V = value.V
+                        O = value.Open,
+                        L = value.Low,
+                        C = value.Close,
+                        H = value.High,
+                        V = value.Volume
                     });
                 }
             }
@@ -110,11 +113,11 @@ namespace StockInfo.Server.Services
                         {
                             Ticker = ticker,
                             Date = value.Date,
-                            O = value.O,
-                            L = value.L,
-                            C = value.C,
-                            H = value.H,
-                            V = value.V
+                            O = value.Open,
+                            L = value.Low,
+                            C = value.Close,
+                            H = value.High,
+                            V = value.Volume
                         });
                     }
                 }
@@ -122,16 +125,16 @@ namespace StockInfo.Server.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<StockValueDto>> GetValuesAsync(string ticker, int days)
+        public async Task<IEnumerable<StockValueDto>> GetValuesAsync(string ticker)
         {
-            return await _dbContext.StockValues.Where(value => value.Ticker == ticker).OrderBy(value => value.Date).Take(days).Select(value => new StockValueDto
+            return await _dbContext.StockValues.Where(value => value.Ticker == ticker).OrderBy(value => value.Date).Select(value => new StockValueDto
             {
                 Date = value.Date,
-                O = value.O,
-                L = value.L,
-                C = value.C,
-                H = value.H,
-                V = value.V
+                Open = value.O,
+                Low = value.L,
+                Close = value.C,
+                High = value.H,
+                Volume = value.V
             })
                 .ToListAsync();
         }

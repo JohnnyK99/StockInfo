@@ -1,17 +1,11 @@
 ﻿<div>
-    <p><b>Ticker: </b>@Ticker</p>
     <p><b>Company Name: </b>@Info.Name</p>
-    <p><b>CEO: </b>@Info.Ceo</p>
-    <p><b>Website: </b><a href="@Info.Url" target="_blank">@Info.Url</a></p>
     <p><b>Country: </b>@Info.Country</p>
     <p><b>Industry: </b>@Info.Industry</p>
     <p><b>Sector: </b>@Info.Sector</p>
 </div>
 
 @code {
-    [Parameter]
-    public string Ticker { get; set; }
-
     [Parameter]
     public StockInfoDto Info { get; set; }
 }

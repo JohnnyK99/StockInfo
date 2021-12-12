@@ -4,7 +4,7 @@ namespace StockInfo.Shared.Models
 {
     public class TickerName
     {
-        public string Ticker { get; set; }
+        public string Symbol { get; set; }
         public string Name { get; set; }
 
         [JsonIgnore]
@@ -26,6 +26,11 @@ namespace StockInfo.Shared.Models
                     return Name;
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            return Symbol + " | " + NameBrief;
         }
     }
 }

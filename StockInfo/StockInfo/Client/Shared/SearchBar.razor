@@ -1,29 +1,51 @@
 ﻿@inject NavigationManager navigationManager
-@inject IHttpService httpService
+@inject HttpClient httpClient
 
-<SfAutoComplete TValue="string" TItem="TickerName" Placeholder="e.g. TSLA" DataSource="@tickers" Width="200%">
-    <AutoCompleteTemplates TItem="TickerName">
-        <ItemTemplate>
-            <span><span class='ticker'>@((context as TickerName).Ticker)</span><span class='name'>@((context as TickerName).NameBrief)</span></span>
-        </ItemTemplate>
-    </AutoCompleteTemplates>
-    <AutoCompleteFieldSettings Value="Ticker" />
-    <AutoCompleteEvents TValue="string" TItem="TickerName" OnValueSelect="Selected" />
-</SfAutoComplete>
+@using Radzen 
+@using Radzen.Blazor
 
+<RadzenAutoComplete @bind-Value="_selected" Data="@tickers" TextProperty="@nameof(TickerName.ToString)" LoadData="Search" Change="Redirect2" Placeholder="Wyszukaj..."  />
 
 @code {
-    private List<TickerName> tickers;
+    private string _selected;
+    private List<TickerName> tickers = new List<TickerName>();
+    private bool _isLoaded = false;
 
-    protected override async Task OnInitializedAsync()
+    private async Task Search(LoadDataArgs args)
     {
-        var response = await httpService.GetAsync<List<TickerName>>("api/tickers");
+        if (string.IsNullOrEmpty(args.Filter))
+        {
+            tickers = null;
+        }
+        else
+        {
+            var response = await httpClient.GetAsync($"api/tickers?filter={args.Filter}");
+            Console.WriteLine("Liczba rekordów: " + tickers.Count);
 
-        tickers = response.Response;
+            if (response.IsSuccessStatusCode)
+            {
+                tickers = JsonConvert.DeserializeObject<List<TickerName>>(await response.Content.ReadAsStringAsync());
+            }
+            else
+            {
+                tickers = null;
+            }
+        }
+        await InvokeAsync(StateHasChanged);
     }
 
-    private void Selected(SelectEventArgs<TickerName> args)
+    private void Redirect(TickerName ticker)
     {
-        navigationManager.NavigateTo($"tickers/{args.ItemData.Ticker}");
+        navigationManager.NavigateTo($"tickers/{ticker.Symbol}");
+    }
+
+    private void Redirect2()
+    {
+        //workaround for the components unexpected behavior: calling the Change event twice
+        if (_selected.Contains("|"))
+        {
+            //Console.WriteLine("Redirecting to: " + _selected.Split("|")[0].ToUpper());
+            navigationManager.NavigateTo($"/tickers/{_selected.Split(" | ")[0].ToUpper()}");
+        }
     }
 }

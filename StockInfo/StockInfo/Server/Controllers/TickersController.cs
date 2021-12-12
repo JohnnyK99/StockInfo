@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace StockInfo.Server.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TickersController : ControllerBase
@@ -22,9 +22,12 @@ namespace StockInfo.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetTickersAsync()
+        public async Task<IActionResult> GetTickersAsync(string filter)
         {
-            return Ok(await _apiService.GetTickersAsync());
+            var user = HttpContext.User;
+
+
+            return Ok(await _apiService.GetFilteredTickersAsync(filter));
         }
 
         [HttpGet("{ticker}")]
@@ -52,12 +55,11 @@ namespace StockInfo.Server.Controllers
                 {
                     Ticker = ticker,
                     Name = info.Name,
-                    Logo = info.Logo,
-                    Url = info.Url,
-                    Ceo = info.Ceo,
                     Country = info.Country,
                     Industry = info.Industry,
                     Sector = info.Sector,
+                    Exchange = info.Exchange,
+                    Currency = info.Currency,
                     LastUpdate = DateTime.Now
                 });
             }
@@ -67,12 +69,12 @@ namespace StockInfo.Server.Controllers
                 {
                     Ticker = ticker,
                     Name = info.Name,
-                    Logo = info.Logo,
-                    Url = info.Url,
-                    Ceo = info.Ceo,
+                    Description = info.Description,
                     Country = info.Country,
                     Industry = info.Industry,
                     Sector = info.Sector,
+                    Exchange = info.Exchange,
+                    Currency = info.Currency,
                     LastUpdate = DateTime.Now
                 });
             }
@@ -83,16 +85,16 @@ namespace StockInfo.Server.Controllers
         }
 
         [HttpGet("{ticker}/data")]
-        public async Task<IActionResult> GetTickerChartDataAsync(string ticker, int days)
+        public async Task<IActionResult> GetTickerChartDataAsync(string ticker)
         {
-            var data = await _apiService.GetChartDataAsync(ticker, days);
+            var data = await _apiService.GetChartDataAsync(ticker);
 
             if (data == null)
             {
                 //try to get from database
                 if (await _dbService.ExistsValueAsync(ticker))
                 {
-                    data = await _dbService.GetValuesAsync(ticker, days);
+                    data = await _dbService.GetValuesAsync(ticker);
                 }
                 else
                 {
@@ -126,12 +128,6 @@ namespace StockInfo.Server.Controllers
         public async Task<IActionResult> GetSaved(string username)
         {
             return Ok(await _dbService.GetSavedStocks(username));
-        }
-
-        [HttpGet("articles/{ticker}")]
-        public async Task<IActionResult> GetArticlesAsync(string ticker, int number)
-        {
-            return Ok(await _apiService.GetArticlesAsync(ticker, number));
         }
     }
 }

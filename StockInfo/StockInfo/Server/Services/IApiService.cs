@@ -7,9 +7,8 @@ namespace StockInfo.Server.Services
 {
     public interface IApiService
     {
-        Task<List<TickerName>> GetTickersAsync(); 
+        Task<List<TickerName>> GetFilteredTickersAsync(string filter); 
         Task<StockInfoDto> GetStockInfoAsync(string ticker);
-        Task<IEnumerable<StockValueDto>> GetChartDataAsync(string ticker, int numberOfDays);
-        Task<IEnumerable<Article>> GetArticlesAsync(string ticker, int number);
+        Task<IEnumerable<StockValueDto>> GetChartDataAsync(string ticker);
     }
 }
