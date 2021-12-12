@@ -24,9 +24,6 @@ namespace StockInfo.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> GetTickersAsync(string filter)
         {
-            var user = HttpContext.User;
-
-
             return Ok(await _apiService.GetFilteredTickersAsync(filter));
         }
 
